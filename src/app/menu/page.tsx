@@ -1,9 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
-import { useSession } from "next-auth/react";
-import Link from "next/link";
-import Navbar from "../components/navbar";
 
+import Link from "next/link";
 
 
 interface Recipe {
@@ -15,9 +13,10 @@ interface Recipe {
 }
 
 export default function MenuPage() {
-  const [recipes, setRecipes] = useState<Recipe[]>([]);
-  const [error, setError] = useState("");
+  const [recipes, setRecipes] = useState<Recipe[]>([]); // สูตรอาหารทั้งหมด
+  const [error, setError] = useState(""); // ข้อความ error
 
+  // ดึงข้อมูลสูตรอาหารจาก API
   useEffect(() => {
     const fetchRecipes = async () => {
       try {
@@ -26,8 +25,8 @@ export default function MenuPage() {
         });
         if (res.ok) {
           const data = await res.json();
-          console.log("API Response:", data); // ตรวจสอบข้อมูลที่ได้รับ
-          setRecipes(data.recipes); // ดึงข้อมูลจาก property recipes
+          console.log("API Response:", data);
+          setRecipes(data.recipes); // ตั้งค่าข้อมูลสูตรอาหาร
         } else {
           setError("Failed to fetch recipes.");
         }
@@ -38,6 +37,7 @@ export default function MenuPage() {
     fetchRecipes();
   }, []);
 
+  // ฟังก์ชันลบสูตรอาหาร
   const handleDelete = async (id: string) => {
     const confirmDelete = confirm("ແນ່ໃຈແລ້ວບໍ່ທີ່ຈະລົບຂໍ້ມູນສູດອາຫານນີ້?");
     if (!confirmDelete) return;
@@ -48,7 +48,7 @@ export default function MenuPage() {
       });
 
       if (res.ok) {
-        setRecipes((prev) => prev.filter((recipe) => recipe._id !== id));
+        setRecipes((prev) => prev.filter((recipe) => recipe._id !== id)); // อัปเดตรายการสูตรอาหารหลังลบ
       } else {
         console.error("Failed to delete recipe");
       }
@@ -60,6 +60,7 @@ export default function MenuPage() {
   return (
 
     <div className="menu-page">
+      {/* ปุ่มกลับไปหน้าแรก */}
       <div className="home-button">
         <Link href="/">
           <button className="profile-button">Back to Homepage</button>
@@ -69,6 +70,7 @@ export default function MenuPage() {
         <h2 className="menu-title">Menu</h2>
         {error && <p className="error-message">{error}</p>}
         <div className="recipe-list">
+          {/* แสดงรายการสูตรอาหาร */}
           {recipes.map((recipe) => (
             <div key={recipe._id} className="recipe-card">
               <img src={recipe.imageUrl} alt={recipe.title} className="recipe-image" />
@@ -76,13 +78,15 @@ export default function MenuPage() {
                 <h3 className="recipe-title">{recipe.title}</h3>
                 <p className="recipe-ingredients">{recipe.ingredients}</p>
                 <div className="button-group">
+                  {/* ปุ่มดูรายละเอียด */}
                   <Link href={`/recipe-detail/${recipe._id}`}>
                     <button className="view-details">View Details</button>
                   </Link>
-                  {/* เพิ่มปุ่ม Edit */}
+                  {/* ปุ่มแก้ไข */}
                   <Link href={`/edit-recipe/${recipe._id}`}>
                     <button className="edit-button">Edit</button>
                   </Link>
+                  {/* ปุ่มลบ */}
                   <button className="delete-button" onClick={() => handleDelete(recipe._id)}>Delete</button>
                 </div>
               </div>
@@ -90,6 +94,7 @@ export default function MenuPage() {
           ))}
         </div>
 
+        {/* ปุ่มเพิ่มสูตรอาหารใหม่ */}
         <div className="add-recipe-container">
           <Link href="/add-recipe">
             <button className="add-recipe-button">Add New Recipe</button>
@@ -101,3 +106,12 @@ export default function MenuPage() {
   );
 
 }
+
+
+//หน้าแสดงเมนูสูตรอาหารทั้งหมด
+
+//มีปุ่มสำหรับดูรายละเอียด, แก้ไข, และลบสูตรอาหาร
+
+//มีการยืนยันก่อนลบข้อมูล
+
+//มีปุ่มสำหรับเพิ่มสูตรอาหารใหม่

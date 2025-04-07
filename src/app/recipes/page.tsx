@@ -1,50 +1,98 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import Link from "next/link";
 
 interface Recipe {
   _id: string;
-  name: string;
-  image: string;
+  title: string;
+  ingredients: string;
+  instructions: string;
+  imageUrl: string;
 }
-const Recipes = () => {
-  const searchParams = useSearchParams();
-  const searchQuery = searchParams.get("search") || "";
-  const [recipes, setRecipes] = useState<Recipe[]>([]);
-  const [filteredRecipes, setFilteredRecipes] = useState<Recipe[]>([]);
 
+export default function RecipesPage() {
+  const searchParams = useSearchParams();
+  const searchQuery = searchParams.get("search") || ""; // ค่าค้นหาจาก URL
+  const [recipes, setRecipes] = useState<Recipe[]>([]); // รายการสูตรอาหารทั้งหมด
+  const [filteredRecipes, setFilteredRecipes] = useState<Recipe[]>([]); // รายการที่กรองแล้ว
+  const [loading, setLoading] = useState(true); // สถานะการโหลด
+
+  // ดึงข้อมูลสูตรอาหารจาก API
   useEffect(() => {
-    // ดึงข้อมูลสูตรอาหารจาก API
-    fetch("/api/recipes")
-      .then((res) => res.json())
-      .then((data) => setRecipes(data));
+    const fetchRecipes = async () => {
+      try {
+        const res = await fetch("/api/recipes");
+        const data = await res.json();
+        if (res.ok) {
+          setRecipes(data.recipes);
+          setFilteredRecipes(data.recipes);
+        }
+      } catch (error) {
+        console.error("Error fetching recipes:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchRecipes();
   }, []);
 
+  // กรองสูตรอาหารตามคำค้นหา
   useEffect(() => {
-    // กรองสูตรอาหารที่ตรงกับคำค้นหา
-    setFilteredRecipes(
-      recipes.filter((recipe) =>
-        recipe.name.toLowerCase().includes(searchQuery.toLowerCase())
-      )
-    );
+    if (searchQuery) {
+      const filtered = recipes.filter(recipe =>
+        recipe.title.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+      setFilteredRecipes(filtered);
+    } else {
+      setFilteredRecipes(recipes);
+    }
   }, [searchQuery, recipes]);
 
+  if (loading) return <div>Loading recipes...</div>;
+
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold">Recipes</h1>
-      <div className="grid grid-cols-3 gap-4 mt-4">
-        {filteredRecipes.length > 0 ? (
-          filteredRecipes.map((recipe) => (
-            <div key={recipe._id} className="border p-4 rounded shadow">
-              <img src={recipe.image} alt={recipe.name} className="w-full h-40 object-cover" />
-              <h2 className="text-lg font-semibold">{recipe.name}</h2>
-            </div>
-          ))
-        ) : (
-          <p>No recipes found.</p>
+    <div className="recipes-container">
+      <h1 className="recipes-title">All Recipes</h1>
+      
+      {/* ผลลัพธ์การค้นหา */}
+      <div className="search-results">
+        {searchQuery && (
+          <p>Search results for: <strong>{searchQuery}</strong></p>
         )}
+        <p>Showing {filteredRecipes.length} recipes</p>
       </div>
+
+      {/* รายการสูตรอาหาร */}
+      <div className="recipes-grid">
+        {filteredRecipes.map(recipe => (
+          <div key={recipe._id} className="recipe-card">
+            <img 
+              src={recipe.imageUrl} 
+              alt={recipe.title} 
+              className="recipe-image"
+            />
+            <div className="recipe-content">
+              <h2 className="recipe-title">{recipe.title}</h2>
+              <div className="recipe-actions">
+                <Link href={`/recipe-detail/${recipe._id}`} className="view-button">
+                  View Details
+                </Link>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* ถ้าไม่พบสูตรอาหาร */}
+      {filteredRecipes.length === 0 && (
+        <div className="no-results">
+          <p>No recipes found. Try a different search term.</p>
+          <Link href="/recipes" className="clear-search">
+            Clear Search
+          </Link>
+        </div>
+      )}
     </div>
   );
-};
-export default Recipes;
+}

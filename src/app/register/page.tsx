@@ -5,30 +5,32 @@ import { useSession } from "next-auth/react";
 import { redirect } from "next/navigation";
 
 function RegisterPage() {
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [error, setError] = useState("");
-  const { data: session } = useSession();
-  if (session) redirect("/");
+  const [name, setName] = useState(""); // State ສຳຫລັບຊື່
+  const [email, setEmail] = useState(""); // State ສຳຫລັບອີເມວ
+  const [password, setPassword] = useState(""); // State ສຳຫລັບລະຫັດຜ່ານ
+  const [confirmPassword, setConfirmPassword] = useState(""); // State ສຳຫລັບຢືນຢັນລະຫັດຜ່ານ
+  const [error, setError] = useState(""); // State ສຳຫລັບຂໍ້ຄວາມ error
+  const { data: session } = useSession(); // ດຶງຂໍ້ມູນ session
+  if (session) redirect("/"); // ຖ້າມີ session ຢູ່ແລ້ວ redirect ໄປສູ່ຫນ້າເລີ່ມຕົ້ນ
 
-  const [success, setSuccess] = useState("");
+  const [success, setSuccess] = useState(""); // State ສຳຫລັບຂໍ້ຄວາມສຳເລັດ
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // ກວດສອບລະຫັດຜ່ານຄືກັນບໍ່
     if (password !== confirmPassword) {
       setError("Password do not match");
       return;
     }
 
+    // ກວດສອບວ່າຂໍ້ມູນໄດ້ຖືກກອກຄົບບໍ່
     if (!name || !email || !password || !confirmPassword) {
       setError("Please complete all inputs!");
       return;
     }
     try {
-
+      // ກວດສອບວ່າຜູ້ໃຊ້ນີ້ມີຢູ່ແລ້ວບໍ່
       const resCheckUser = await fetch("http://localhost:3000/api/checkUser", {
         method: "POST",
         headers: {
@@ -43,6 +45,7 @@ function RegisterPage() {
         return;
       }
 
+      // ສົ່ງຂໍ້ມູນໄປຫາ API register
       const res = await fetch("http://localhost:3000/api/register", {
         method: "POST",
         headers: {
@@ -57,8 +60,7 @@ function RegisterPage() {
         const form = e.target as HTMLFormElement;
         setError("");
         setSuccess("registraion successflly. ")
-        form.reset();
-
+        form.reset(); // ລີເຊັດຟອມໃຫມ່
       } else {
         console.log("User registered failed.")
       }
@@ -71,8 +73,8 @@ function RegisterPage() {
   return (
     <div className="container">
       <h2 className="title">Register</h2>
-      {error && <p className="error">{error}</p>}
-      {success && <p className="success">{success}</p>}
+      {error && <p className="error">{error}</p>} {/* ສະແດງຂໍ້ຄວາມ error */}
+      {success && <p className="success">{success}</p>} {/* ສະແດງຂໍ້ຄວາມສຳເລັດ */}
       <form onSubmit={handleSubmit} className="form">
         <input type="text" placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} className="input" />
         <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} className="input" />
@@ -86,3 +88,11 @@ function RegisterPage() {
 }
 
 export default RegisterPage;
+
+// ຫນ້າລົງທະບຽນສໍາລັບຜູ້ໃຊ້ເພື່ອສະຫມັກສະມາຊິກ.
+
+//ຂໍ້ມູນຖືກກວດສອບຄວາມຖືກຕ້ອງກ່ອນທີ່ຈະສົ່ງໄປຫາ API.
+
+//ກວດເບິ່ງວ່າຜູ້ໃຊ້ນີ້ມີຢູ່ແລ້ວບໍ.
+
+//ຂໍ້ຄວາມຜິດພາດແລະຜົນສໍາເລັດແມ່ນສະແດງຕາມສະຖານະການ.

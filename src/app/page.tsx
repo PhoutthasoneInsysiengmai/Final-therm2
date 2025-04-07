@@ -18,19 +18,21 @@ interface Recipe {
 }
 
 const Home: React.FC = () => {
-  const [darkMode, setDarkMode] = useState<boolean>(false);
-  const { data: session } = useSession();
-  const router = useRouter();
-  const [searchQuery, setSearchQuery] = useState("");
-  const [filteredRecipes, setFilteredRecipes] = useState<Recipe[]>([]);
-  const [recipes, setRecipes] = useState<Recipe[]>([]);
+  const [darkMode, setDarkMode] = useState<boolean>(false); // สถานะโหมด Dark/Light
+  const { data: session } = useSession(); // ข้อมูล session ผู้ใช้
+  const router = useRouter(); // ใช้สำหรับการเปลี่ยนหน้า
+  const [searchQuery, setSearchQuery] = useState(""); // ค่าในการค้นหา
+  const [filteredRecipes, setFilteredRecipes] = useState<Recipe[]>([]); // สูตรอาหารที่กรองแล้ว
+  const [recipes, setRecipes] = useState<Recipe[]>([]); // สูตรอาหารทั้งหมด
 
+  // ถ้าไม่มี session ให้ redirect ไปหน้า login
   useEffect(() => {
     if (!session) {
       router.replace("/login");
     }
   }, [session, router]);
 
+  // ดึงข้อมูลสูตรอาหารจาก API
   useEffect(() => {
     const fetchRecipes = async () => {
       try {
@@ -40,7 +42,7 @@ const Home: React.FC = () => {
         if (res.ok) {
           const data = await res.json();
           setRecipes(data.recipes);
-          setFilteredRecipes(data.recipes); // ຕັ່ງຄ່າເລີ່ມຕົ້ນຂອງ filteredRecipes
+          setFilteredRecipes(data.recipes); // ตั้งค่าเริ่มต้นให้ filteredRecipes
         } else {
           console.error("Failed to fetch recipes.");
         }
@@ -51,6 +53,7 @@ const Home: React.FC = () => {
     fetchRecipes();
   }, []);
 
+  // ฟังก์ชันค้นหาสูตรอาหาร
   const handleSearch = (query: string) => {
     setSearchQuery(query);
     const filtered = recipes.filter((recipe) =>
@@ -60,41 +63,44 @@ const Home: React.FC = () => {
   };
 
   if (!session) {
-    return null;
+    return null; // ถ้าไม่มี session ไม่แสดงอะไร
   }
 
   return (
     <div className={darkMode ? "dark-mode" : "light-mode"}>
-      {/* ສົ່ງຟັງຊັັ່ນ handleSearch ໄປຫາ Navbar */}
+      {/* ส่ง props ไปยัง Navbar */}
       <Navbar
         darkMode={darkMode}
         setDarkMode={setDarkMode}
         session={session}
-        onSearch={handleSearch} // ສົ່ງຟັງຊັັນຄຳຄົ້ນຫາ
+        onSearch={handleSearch}
       />
       <hr />
       <div className="mt-10">
-        <Carousel />
+        <Carousel /> {/* แสดง Carousel */}
       </div>
       <hr />
       <div className="bottom">
+        {/* ปุ่มเพิ่มสูตรอาหาร */}
         <div className="icon-add">
           <IoIosAddCircle className="icon" />
           <Link href="/add-recipe"><button>Add-recipe</button> </Link>
         </div>
 
+        {/* ปุ่มเมนูสูตรอาหาร */}
         <div className="icon-add">
           <MdOutlineRestaurantMenu className="icon" />
           <Link href="/menu"><button>Menu</button></Link>
         </div>
 
+        {/* ปุ่มเกี่ยวกับเรา */}
         <div className="icon-add">
           <AiFillExclamationCircle className="icon" />
           <Link href="/about"><button>about</button></Link>
         </div>
       </div>
       <hr />
-      {/* ສະແດງສູດອາຫານທີ່ຖືກຄົ້ນຫາ */}
+      {/* แสดงรายการสูตรอาหารที่ค้นหา */}
       <div className="recipe-list-1">
         {filteredRecipes.map((recipe) => (
           <div key={recipe._id} className="recipe-card">
@@ -117,3 +123,13 @@ const Home: React.FC = () => {
 };
 
 export default Home;
+
+// ຫນ້າທໍາອິດຄໍາຮ້ອງສະຫມັກ
+
+// ມີລະບົບ Dark/Light Mode.
+
+// ສະແດງ Carousel ແລະບັນຊີລາຍຊື່ສູດ
+
+// ມີປ່ອງຊອກຫາບ່ອນທີ່ສູດອາຫານສາມາດຖືກກັ່ນຕອງ.
+
+// ມີການເຊື່ອມຕໍ່ກັບຫນ້າຕ່າງໆເຊັ່ນ: ເພີ່ມສູດ, ເມນູ, ກ່ຽວກັບພວກເຮົາ.
